@@ -1,4 +1,4 @@
-# RoadVision Nepal — Research Log
+# RoadVision Nepal Research Log
 
 ## Session 2 — July 09, Tuesday
 
@@ -15,12 +15,11 @@
 ### What I built
 - Stage 2: Grayscale conversion added to main.py
 - rescale_frame function for display at 0.5 scale
-- practice/color_spaces.py — explored BGR, HSV, LAB, RGB conversions
+- practice/color_spaces.py. Explored BGR, HSV, LAB, RGB conversions
 
 ### Observations — Kathmandu Grayscale
 - Road surface maps to low uniform dark gray
 - No lane markings means no intensity gradients on road surface
 - Dominant bright regions: streetlamps, headlights, sky
 - Prediction: Canny will fire on lighting and building edges before any road-relevant features
-- This is already a documentable failure condition for the failure analysis section
 
