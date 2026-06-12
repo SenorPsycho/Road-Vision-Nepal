@@ -54,9 +54,14 @@ while True:
     isTrue, frame = Kathmandu_Video.read()
     isTrue2, frame2 = Highway_video.read()
     
-    #If no frame returned, exit loop
+    #Frame checker
     if not isTrue or not isTrue2:
         break
+    
+    #Frame copy for drawing lines later without affecting original frame
+    #frame_copy is kathmandu video, frame2_copy is highway video
+    frame_copy = frame.copy()
+    frame2_copy = frame2.copy()
     
     # Convert to grayscale — collapses 3 BGR channels into 1 intensity channel
     # Canny needs single channel input to detect intensity gradients cleanly
@@ -79,15 +84,35 @@ while True:
     ROI_video_kathmandu = region_of_interest(canny_video_kathmandu)
     ROI_video_highway = region_of_interest(canny_video_highway)
     
+    #Apply Hough Transform to find lines in the masked Canny output
+    Hough_video_kathmandu = cv.HoughLinesP(ROI_video_kathmandu, 2, np.pi/180, threshold=100, minLineLength=40, maxLineGap=5)
+    Hough_video_highway = cv.HoughLinesP(ROI_video_highway, 2, np.pi/180, threshold=100,minLineLength=40, maxLineGap=5)
+    
+    #Loop through detected lines and draw them on the copied frame
+    
+    #First loop for kathmandu video (with none check for lines, because if no lines detected, it will throw an error)
+    if Hough_video_kathmandu is not None:
+        for line in Hough_video_kathmandu:
+            x1,y1,x2,y2 = line[0]
+            cv.line(frame_copy, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    
+    #Second loop for highway video (Same logic with none check for lines)
+    if Hough_video_highway is not None:
+        for line in Hough_video_highway:
+            x1,y1,x2,y2 = line[0]
+            cv.line(frame2_copy, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    
     #All imshow calls
     # cv.imshow('Video_Display',rescale_frame(frame,scale = 0.5))
     # cv.imshow('Grayscale Video',rescale_frame(grayscale_video,scale = 0.5))
     # cv.imshow('Gaussian Blur',rescale_frame(gaussian_blur_video,scale = 0.5))
     # cv.imshow('Canny Video Kathmandu',rescale_frame(canny_video_kathmandu,scale = 0.5))
     # cv.imshow('Canny Video Highway', rescale_frame(canny_video_highway, scale = 0.5))
+    # cv.imshow('ROI masked video Kathmandu',rescale_frame(ROI_video_kathmandu,scale = 0.5))
+    # cv.imshow('ROI masked video highway',rescale_frame(ROI_video_highway,scale = 0.5))
     
-    cv.imshow('ROI masked video Kathmandu',rescale_frame(ROI_video_kathmandu,scale = 0.5))
-    cv.imshow('ROI masked video highway',rescale_frame(ROI_video_highway,scale = 0.5))
+    cv.imshow('Hough Lines Video Kathmandu',rescale_frame(frame_copy, scale = 0.5))
+    cv.imshow('Hough Lines Video Highway',rescale_frame(frame2_copy, scale = 0.5))
     
     
     #Using "d" to exit the video manually before video ends
