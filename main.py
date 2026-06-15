@@ -8,7 +8,7 @@ def average_line(frame, lines):
     right_lines = []
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        slope = (y2 - y1) / (x2 - x1)
+        slope = (y2 - y1) / (x2 - x1) if x2 != x1 else 0  # Avoid division by zero for vertical lines
         intercept = y1 - slope * x1
         if slope < -0.3:
             left_lines.append((slope, intercept))
@@ -206,4 +206,5 @@ while True:
 
 # Release file handling and free memory
 Kathmandu_Video.release()
+Highway_video.release()
 cv.destroyAllWindows()
