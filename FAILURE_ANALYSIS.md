@@ -1,4 +1,7 @@
 # Failure Analysis of Classical Lane Detection on Kathmandu Roads
+## Executive summary
+
+The classical lane detection pipeline fails on Kathmandu urban roads because painted lane markings and the resulting intensity gradients are absent. Each stage therefore has no valid road signal to work with, and the pipeline often produces confident but incorrect lines by latching onto background structure. HSV color filtering and adaptive ROI change failure behavior but do not recover lane signal; addressing this environment requires different cues such as road-boundary detection, semantic segmentation, or sensor fusion.
 
 ## Overview
 This document is the failure analysis of classical lane detection pipeline on unstructured, crowded and non-marked urban roads of Kathmandu, Nepal. Using a US-based scenario for pipeline benchmark, this examines the pipeline's performance on urban roads, reinforcing the idea that the failure is fundamental, not a tuning problem where standard environmental assumptions do not hold.
@@ -143,3 +146,41 @@ The core finding is simple: the classical lane detection pipeline is built on on
 This has two practical consequences. First, tuning thresholds and adjusting parameters cannot fix signal absence. Any system deployed on unstructured roads without lane markings will show Failure Mode 2 regardless of how carefully it is calibrated. Second, the pipeline's confident failure is more dangerous than silent failure for safety-critical applications. A system that draws no lines signals that it has lost tracking. A system that draws wrong lines with confidence gives no such signal.
 
 For roads like those in the Kathmandu footage, a viable detection system would need to use cues beyond lane markings. Possible approaches include road boundary detection using edge contrast between the road and its surroundings, semantic segmentation that identifies drivable surface rather than markings, or sensor fusion incorporating depth or GPS. These are outside the scope of this evaluation, but they represent the logical next step given what we have found here.
+
+## Adaptation Experiments
+
+### Experiment 1: HSV color filtering
+
+**What it does**
+
+Convert each frame from BGR to HSV before further processing. Create two masks: one for yellow markings (H 15-35, S 120-255, V 80-255) and one for white markings (H 0-179, S 0-50, V 200-255). Combine the masks and apply them to the original frame so only pixels that match lane-marking colors pass through to the rest of the pipeline.
+
+**What we expected**
+
+Filtering by color should remove many false gradients from buildings, vehicles, and lighting. Canny would see fewer irrelevant edges, giving the downstream stages a cleaner signal to work with.
+
+**What actually happened**
+
+On the highway footage, the filter isolated the yellow left lane marking reliably. The white dashed right lane remained intermittent because of dash gaps, but the filter did not make that worse. On the Kathmandu footage, the filter produced almost no output, which is correct because there are no yellow or white lane markings to detect.
+
+**Implication**
+
+HSV filtering helps when the target signal exists. On structured roads it reduces noise and improves detection clarity. On unmarked roads it produces no output, which is the correct behavior: the system reports no detected markings rather than producing confident, incorrect lines. This confirms that the core bottleneck is signal absence, not color space choice.
+
+### Experiment 2: Adaptive ROI
+
+**What it does**
+
+Replace the fixed triangle apex (height // 2) with a dynamically estimated apex. Scan the upper half of the Canny output row by row and sum edge pixel values. Use the lowest row in the upper half whose sum exceeds a threshold (500) as the apex height. If no row meets the threshold, fall back to height // 2.
+
+**What we expected**
+
+The fixed ROI assumes the vanishing point sits at the vertical center of the frame. Making the apex adaptive should better match per-frame road geometry and might recover lane evidence that a fixed triangle would exclude.
+
+**What actually happened**
+
+No meaningful change was observed on either video. The apex moved slightly from frame to frame, but highway results stayed the same and Kathmandu still produced no lane signal.
+
+**Implication**
+
+ROI placement was not the bottleneck. The fixed triangle did not exclude useful lane information; there was no useful lane information to exclude. Dynamically moving the search window cannot recover a signal that is not present in the frame. Geometric tuning of the ROI is therefore not a viable path to improving detection on unmarked roads.

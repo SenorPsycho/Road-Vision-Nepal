@@ -77,29 +77,35 @@ def rescale_frame(frame, scale=0.75):
 
 # Region of Interest (ROI) function for noise removal (Road widens at bottom, narrows toward horizon)
 def region_of_interest(frame):
-    # Used triangle for best outcome
-    # Coordinates based on 1920x1080 frame
     height = frame.shape[0]
     width = frame.shape[1]
 
-    triangle = np.array(
+    # Look at upper half of frame only
+    upper_half = frame[0:height // 2, :]
+    
+    # Sum edge pixels across each row
+    row_sums = np.sum(upper_half, axis=1)
+    
+    # Find rows with significant edge activity
+    significant_rows = np.where(row_sums > 500)[0]
+
+    # Use lowest significant row as apex, fallback to height//2
+    if len(significant_rows) > 0:
+        apex_y = int(significant_rows[-1])
+    else:
+        apex_y = height // 2
+
+    triangle = np.array([
         [
-            [
-                (0, height),  # bottom-left corner
-                (width, height),  # bottom-right corner
-                (width // 2, height // 2),
-            ]  # apex at center, halfway up
+            (0, height),
+            (width, height),
+            (width // 2, apex_y)
         ]
-    )
+    ])
 
-    ## Create black mask same size as input
     mask = np.zeros_like(frame)
-
     cv.fillPoly(mask, triangle, 255)
-
-    masked_image = cv.bitwise_and(frame, mask)
-
-    return masked_image
+    return cv.bitwise_and(frame, mask)
 
 
 # Opening the kathmamdu video -Unstructured Case
