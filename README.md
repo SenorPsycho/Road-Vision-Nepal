@@ -30,6 +30,8 @@ The pipeline was tested on two videos representing contrasting environments:
 - **Highway footage**: a structured US highway with clear lane markings, used as a baseline to confirm the pipeline functions correctly under standard assumptions
 - **Kathmandu footage**: urban roads from Kathmandu to Dharke, recorded at dusk, with no consistent lane markings, dense surrounding structures, and mixed lighting
 
+This evaluation is an exploratory case study based on a small set of representative videos and is intended to analyze failure mechanisms rather than provide statistically generalizable performance estimates.
+
 Two adaptations were then applied and evaluated.
 
 ### HSV color filtering
@@ -97,4 +99,4 @@ Python, OpenCV, NumPy
 
 ## Future Direction
 
-The primary limitation is the absence of reliable lane markings. Future work may investigate road-boundary-based approaches that identify drivable surface without relying on painted markings, or semantic segmentation methods that do not assume structured road environments.
+The primary limitation is the absence of reliable lane markings. Future work may investigate semantic segmentation methods that identify drivable surface directly, as well as sensor-fusion approaches incorporating depth, localization, or additional environmental context.
