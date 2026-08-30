@@ -1,6 +1,6 @@
 # Kathmandu Lane Detection Failure Analysis
 
-A systematic evaluation of a classical (Canny/Hough) lane detection pipeline on unmarked, unstructured urban roads in Kathmandu, Nepal, benchmarked against structured US highway footage. Originally developed as Phase 1 of the RoadVision Nepal research effort.
+A systematic evaluation of a classical (Canny/Hough) lane detection pipeline on unmarked, unstructured urban roads in Kathmandu, Nepal, benchmarked against structured US highway footage.
 
 ## Research question
 
